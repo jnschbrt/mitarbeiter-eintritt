@@ -4,4 +4,4 @@ camunda.bpm.admin-user:
 
 spring:
   datasource:
-    url: jdbc:h2:file:/Users/jschubert/camundaDB
+    url: jdbc:h2:file:/Users/jschubert/camundaDB/camundaDB

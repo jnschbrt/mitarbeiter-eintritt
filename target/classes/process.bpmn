@@ -1,18 +1,47 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Definitions_0fr9mxs" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="3.5.0">
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" id="Definitions_0fr9mxs" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="3.5.0">
   <bpmn:process id="mitarbeiter-entritt-process" isExecutable="true">
     <bpmn:startEvent id="StartEvent_1">
       <bpmn:outgoing>SequenceFlow_1fp17al</bpmn:outgoing>
     </bpmn:startEvent>
-    <bpmn:sequenceFlow id="SequenceFlow_1fp17al" sourceRef="StartEvent_1" targetRef="say-hello" />
-    <bpmn:endEvent id="EndEvent_0x6ir2l">
-      <bpmn:incoming>SequenceFlow_16gzt2m</bpmn:incoming>
-    </bpmn:endEvent>
-    <bpmn:sequenceFlow id="SequenceFlow_16gzt2m" sourceRef="say-hello" targetRef="EndEvent_0x6ir2l" />
-    <bpmn:userTask id="say-hello" name="Say hello to&#10;admin">
+    <bpmn:sequenceFlow id="SequenceFlow_1fp17al" sourceRef="StartEvent_1" targetRef="add_user_information" />
+    <bpmn:userTask id="add_user_information" name="Benutzerinformationen eintragen" camunda:assignee="admin">
+      <bpmn:extensionElements>
+        <camunda:formData>
+          <camunda:formField id="first_name" label="Vorname" type="string" />
+          <camunda:formField id="last_name" label="Nachname" type="string" />
+          <camunda:formField id="department" label="Abteilung" type="string" />
+          <camunda:formField id="position" label="Position/Bezeichnung" type="string" />
+        </camunda:formData>
+      </bpmn:extensionElements>
       <bpmn:incoming>SequenceFlow_1fp17al</bpmn:incoming>
-      <bpmn:outgoing>SequenceFlow_16gzt2m</bpmn:outgoing>
+      <bpmn:outgoing>SequenceFlow_0smac8p</bpmn:outgoing>
     </bpmn:userTask>
+    <bpmn:scriptTask id="logging_userinformation" name="Logging Benutzerinfos" scriptFormat="groovy">
+      <bpmn:incoming>SequenceFlow_0k0ij93</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_05q80su</bpmn:outgoing>
+      <bpmn:script>new File('Log.txt').write("Name : " + first_name + " " + last_name + " --&gt; Created Username in AD: " + username);</bpmn:script>
+    </bpmn:scriptTask>
+    <bpmn:serviceTask id="create_erp_user" name="ERP System" camunda:delegateExpression="${erpRequestProcessor}">
+      <bpmn:incoming>SequenceFlow_05q80su</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_06eik96</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="SequenceFlow_06eik96" sourceRef="create_erp_user" targetRef="create_hr_user" />
+    <bpmn:serviceTask id="create_hr_user" name="Personalsystem" camunda:class="de.fhms.winfo.PersoServiceDelegate">
+      <bpmn:incoming>SequenceFlow_06eik96</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_1o5w4cp</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="create_ad_exchange_user" name="Active Directory und Exchange" camunda:class="de.fhms.winfo.AdExchangeServiceDelegate">
+      <bpmn:incoming>SequenceFlow_0smac8p</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_0k0ij93</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="SequenceFlow_0smac8p" sourceRef="add_user_information" targetRef="create_ad_exchange_user" />
+    <bpmn:sequenceFlow id="SequenceFlow_0k0ij93" sourceRef="create_ad_exchange_user" targetRef="logging_userinformation" />
+    <bpmn:sequenceFlow id="SequenceFlow_05q80su" sourceRef="logging_userinformation" targetRef="create_erp_user" />
+    <bpmn:endEvent id="EndEvent_09ird37">
+      <bpmn:incoming>SequenceFlow_1o5w4cp</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="SequenceFlow_1o5w4cp" sourceRef="create_hr_user" targetRef="EndEvent_09ird37" />
   </bpmn:process>
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
     <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="mitarbeiter-entritt-process">
@@ -21,18 +50,46 @@
       </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge id="SequenceFlow_1fp17al_di" bpmnElement="SequenceFlow_1fp17al">
         <di:waypoint x="215" y="117" />
-        <di:waypoint x="270" y="117" />
+        <di:waypoint x="271" y="117" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNShape id="EndEvent_0x6ir2l_di" bpmnElement="EndEvent_0x6ir2l">
-        <dc:Bounds x="432" y="99" width="36" height="36" />
+      <bpmndi:BPMNShape id="UserTask_08mft2c_di" bpmnElement="add_user_information">
+        <dc:Bounds x="271" y="77" width="100" height="80" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNEdge id="SequenceFlow_16gzt2m_di" bpmnElement="SequenceFlow_16gzt2m">
-        <di:waypoint x="370" y="117" />
-        <di:waypoint x="432" y="117" />
+      <bpmndi:BPMNShape id="ScriptTask_07pbqgf_di" bpmnElement="logging_userinformation">
+        <dc:Bounds x="600" y="77" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ServiceTask_1odae4i_di" bpmnElement="create_erp_user">
+        <dc:Bounds x="760" y="77" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="SequenceFlow_06eik96_di" bpmnElement="SequenceFlow_06eik96">
+        <di:waypoint x="860" y="117" />
+        <di:waypoint x="920" y="117" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNShape id="UserTask_08mft2c_di" bpmnElement="say-hello">
-        <dc:Bounds x="270" y="77" width="100" height="80" />
+      <bpmndi:BPMNShape id="ServiceTask_1a51p8j_di" bpmnElement="create_hr_user">
+        <dc:Bounds x="920" y="77" width="100" height="80" />
       </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ServiceTask_1a1jfb4_di" bpmnElement="create_ad_exchange_user">
+        <dc:Bounds x="440" y="77" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="SequenceFlow_0smac8p_di" bpmnElement="SequenceFlow_0smac8p">
+        <di:waypoint x="371" y="117" />
+        <di:waypoint x="440" y="117" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="SequenceFlow_0k0ij93_di" bpmnElement="SequenceFlow_0k0ij93">
+        <di:waypoint x="540" y="117" />
+        <di:waypoint x="600" y="117" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="SequenceFlow_05q80su_di" bpmnElement="SequenceFlow_05q80su">
+        <di:waypoint x="700" y="117" />
+        <di:waypoint x="760" y="117" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="EndEvent_09ird37_di" bpmnElement="EndEvent_09ird37">
+        <dc:Bounds x="1082" y="99" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="SequenceFlow_1o5w4cp_di" bpmnElement="SequenceFlow_1o5w4cp">
+        <di:waypoint x="1020" y="117" />
+        <di:waypoint x="1082" y="117" />
+      </bpmndi:BPMNEdge>
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>
 </bpmn:definitions>
