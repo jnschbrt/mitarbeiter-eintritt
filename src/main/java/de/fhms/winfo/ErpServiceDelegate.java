@@ -44,6 +44,8 @@ public class ErpServiceDelegate implements JavaDelegate {
         httpPost.setHeader("Accept", "application/json");
         httpPost.setHeader("Content-type", "application/json");
 
+        // Beispielhafte Implementation
+
 //        CloseableHttpResponse response = httpClient.execute(httpPost);
 //
 //        try {

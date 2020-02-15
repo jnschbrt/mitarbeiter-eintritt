@@ -1,18 +1,39 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" id="Definitions_0fr9mxs" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="3.5.0">
-  <bpmn:process id="mitarbeiter-entritt-process" isExecutable="true">
-    <bpmn:startEvent id="StartEvent_1">
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" id="Definitions_0fr9mxs" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="3.5.0">
+  <bpmn:process id="mitarbeiter-entritt-process" name="Mitarbeitereintritt Process Engine" isExecutable="true">
+    <bpmn:startEvent id="start_process">
+      <bpmn:extensionElements>
+        <camunda:formData>
+          <camunda:formField id="notification_email" label="Zu benachrichtigende E-Mail adresse" type="string" defaultValue="schubert.jonas@web.de" />
+        </camunda:formData>
+      </bpmn:extensionElements>
       <bpmn:outgoing>SequenceFlow_1fp17al</bpmn:outgoing>
     </bpmn:startEvent>
-    <bpmn:sequenceFlow id="SequenceFlow_1fp17al" sourceRef="StartEvent_1" targetRef="add_user_information" />
+    <bpmn:sequenceFlow id="SequenceFlow_1fp17al" sourceRef="start_process" targetRef="add_user_information" />
     <bpmn:userTask id="add_user_information" name="Benutzerinformationen eintragen" camunda:assignee="admin">
       <bpmn:extensionElements>
         <camunda:formData>
-          <camunda:formField id="first_name" label="Vorname" type="string" />
-          <camunda:formField id="last_name" label="Nachname" type="string" />
-          <camunda:formField id="department" label="Abteilung" type="string" />
+          <camunda:formField id="first_name" label="Vorname" type="string">
+            <camunda:validation>
+              <camunda:constraint name="required" />
+            </camunda:validation>
+          </camunda:formField>
+          <camunda:formField id="last_name" label="Nachname" type="string">
+            <camunda:validation>
+              <camunda:constraint name="required" />
+            </camunda:validation>
+          </camunda:formField>
+          <camunda:formField id="department" label="Abteilung" type="enum">
+            <camunda:validation>
+              <camunda:constraint name="required" />
+            </camunda:validation>
+            <camunda:value id="hr" name="Personal" />
+            <camunda:value id="dev" name="Entwicklung" />
+            <camunda:value id="head" name="Geschäftsführung" />
+          </camunda:formField>
           <camunda:formField id="position" label="Position/Bezeichnung" type="string" />
         </camunda:formData>
+        <camunda:taskListener class="de.fhms.winfo.ProcessStartedListener" event="create" />
       </bpmn:extensionElements>
       <bpmn:incoming>SequenceFlow_1fp17al</bpmn:incoming>
       <bpmn:outgoing>SequenceFlow_0smac8p</bpmn:outgoing>
@@ -29,7 +50,7 @@
     <bpmn:sequenceFlow id="SequenceFlow_06eik96" sourceRef="create_erp_user" targetRef="create_hr_user" />
     <bpmn:serviceTask id="create_hr_user" name="Personalsystem" camunda:class="de.fhms.winfo.PersoServiceDelegate">
       <bpmn:incoming>SequenceFlow_06eik96</bpmn:incoming>
-      <bpmn:outgoing>SequenceFlow_1o5w4cp</bpmn:outgoing>
+      <bpmn:outgoing>SequenceFlow_03ebhnu</bpmn:outgoing>
     </bpmn:serviceTask>
     <bpmn:serviceTask id="create_ad_exchange_user" name="Active Directory und Exchange" camunda:class="de.fhms.winfo.AdExchangeServiceDelegate">
       <bpmn:incoming>SequenceFlow_0smac8p</bpmn:incoming>
@@ -38,14 +59,87 @@
     <bpmn:sequenceFlow id="SequenceFlow_0smac8p" sourceRef="add_user_information" targetRef="create_ad_exchange_user" />
     <bpmn:sequenceFlow id="SequenceFlow_0k0ij93" sourceRef="create_ad_exchange_user" targetRef="logging_userinformation" />
     <bpmn:sequenceFlow id="SequenceFlow_05q80su" sourceRef="logging_userinformation" targetRef="create_erp_user" />
-    <bpmn:endEvent id="EndEvent_09ird37">
-      <bpmn:incoming>SequenceFlow_1o5w4cp</bpmn:incoming>
+    <bpmn:sequenceFlow id="SequenceFlow_03ebhnu" sourceRef="create_hr_user" targetRef="evaluate_training" />
+    <bpmn:userTask id="evaluate_training" name="Eingabe Art der Anstellung und Befristung" camunda:candidateGroups="${department}">
+      <bpmn:extensionElements>
+        <camunda:formData>
+          <camunda:formField id="first_name" label="Vorname" type="string">
+            <camunda:validation>
+              <camunda:constraint name="readonly" />
+            </camunda:validation>
+          </camunda:formField>
+          <camunda:formField id="last_name" label="Nachname" type="string">
+            <camunda:validation>
+              <camunda:constraint name="readonly" />
+            </camunda:validation>
+          </camunda:formField>
+          <camunda:formField id="username" label="Benutzername (generiert)" type="string">
+            <camunda:validation>
+              <camunda:constraint name="readonly" />
+            </camunda:validation>
+          </camunda:formField>
+          <camunda:formField id="department" label="Abteilung" type="string">
+            <camunda:validation>
+              <camunda:constraint name="readonly" />
+            </camunda:validation>
+          </camunda:formField>
+          <camunda:formField id="position" label="Position/Bezeichnung" type="string">
+            <camunda:validation>
+              <camunda:constraint name="readonly" />
+            </camunda:validation>
+          </camunda:formField>
+          <camunda:formField id="type_of_enployment" label="Art der Anstellung" type="enum">
+            <camunda:validation>
+              <camunda:constraint name="required" />
+            </camunda:validation>
+            <camunda:value id="permanent" name="Festanstellung" />
+            <camunda:value id="part_time" name="Teilzeit" />
+            <camunda:value id="student" name="Student" />
+          </camunda:formField>
+          <camunda:formField id="limited" label="Befristet" type="boolean">
+            <camunda:validation>
+              <camunda:constraint name="required" />
+            </camunda:validation>
+          </camunda:formField>
+        </camunda:formData>
+      </bpmn:extensionElements>
+      <bpmn:incoming>SequenceFlow_03ebhnu</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_1ddtw3h</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:businessRuleTask id="decide_training" name="Entscheidung Training" camunda:resultVariable="training" camunda:decisionRef="decideTrainingDMN" camunda:mapDecisionResult="singleEntry">
+      <bpmn:incoming>SequenceFlow_1ddtw3h</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_0vt4gma</bpmn:outgoing>
+    </bpmn:businessRuleTask>
+    <bpmn:exclusiveGateway id="training_gateway" default="training_declined">
+      <bpmn:incoming>SequenceFlow_0vt4gma</bpmn:incoming>
+      <bpmn:outgoing>training_approved</bpmn:outgoing>
+      <bpmn:outgoing>training_declined</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:sequenceFlow id="SequenceFlow_0vt4gma" sourceRef="decide_training" targetRef="training_gateway" />
+    <bpmn:sequenceFlow id="training_approved" name="training approved" sourceRef="training_gateway" targetRef="add_employee_to_trainingslist">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${training==true}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:scriptTask id="add_employee_to_trainingslist" name="Mitarbeiter auf Trainingsliste setzen" scriptFormat="groovy">
+      <bpmn:incoming>training_approved</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_0hhavnq</bpmn:outgoing>
+      <bpmn:script>new File('Training.txt').write("Name : " + first_name + " " + last_name + ". Training: " + training);</bpmn:script>
+    </bpmn:scriptTask>
+    <bpmn:sequenceFlow id="SequenceFlow_1ddtw3h" sourceRef="evaluate_training" targetRef="decide_training" />
+    <bpmn:sequenceFlow id="training_declined" name="training declined" sourceRef="training_gateway" targetRef="inform_user" />
+    <bpmn:endEvent id="end_process">
+      <bpmn:incoming>SequenceFlow_19u5cgt</bpmn:incoming>
     </bpmn:endEvent>
-    <bpmn:sequenceFlow id="SequenceFlow_1o5w4cp" sourceRef="create_hr_user" targetRef="EndEvent_09ird37" />
+    <bpmn:sequenceFlow id="SequenceFlow_19u5cgt" sourceRef="inform_user" targetRef="end_process" />
+    <bpmn:sequenceFlow id="SequenceFlow_0hhavnq" sourceRef="add_employee_to_trainingslist" targetRef="inform_user" />
+    <bpmn:sendTask id="inform_user" name="Informiere Benutzer" camunda:class="de.fhms.winfo.InformUserDelegate">
+      <bpmn:incoming>training_declined</bpmn:incoming>
+      <bpmn:incoming>SequenceFlow_0hhavnq</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_19u5cgt</bpmn:outgoing>
+    </bpmn:sendTask>
   </bpmn:process>
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
     <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="mitarbeiter-entritt-process">
-      <bpmndi:BPMNShape id="_BPMNShape_StartEvent_2" bpmnElement="StartEvent_1">
+      <bpmndi:BPMNShape id="_BPMNShape_StartEvent_2" bpmnElement="start_process">
         <dc:Bounds x="179" y="99" width="36" height="36" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge id="SequenceFlow_1fp17al_di" bpmnElement="SequenceFlow_1fp17al">
@@ -83,13 +177,60 @@
         <di:waypoint x="700" y="117" />
         <di:waypoint x="760" y="117" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNShape id="EndEvent_09ird37_di" bpmnElement="EndEvent_09ird37">
-        <dc:Bounds x="1082" y="99" width="36" height="36" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNEdge id="SequenceFlow_1o5w4cp_di" bpmnElement="SequenceFlow_1o5w4cp">
+      <bpmndi:BPMNEdge id="SequenceFlow_03ebhnu_di" bpmnElement="SequenceFlow_03ebhnu">
         <di:waypoint x="1020" y="117" />
-        <di:waypoint x="1082" y="117" />
+        <di:waypoint x="1080" y="117" />
       </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="UserTask_1s0sywg_di" bpmnElement="evaluate_training">
+        <dc:Bounds x="1080" y="77" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BusinessRuleTask_1iiyhss_di" bpmnElement="decide_training">
+        <dc:Bounds x="1240" y="77" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ExclusiveGateway_1n8gs5z_di" bpmnElement="training_gateway" isMarkerVisible="true">
+        <dc:Bounds x="1405" y="92" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="SequenceFlow_0vt4gma_di" bpmnElement="SequenceFlow_0vt4gma">
+        <di:waypoint x="1340" y="117" />
+        <di:waypoint x="1405" y="117" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="SequenceFlow_0qq4bea_di" bpmnElement="training_approved">
+        <di:waypoint x="1430" y="142" />
+        <di:waypoint x="1430" y="230" />
+        <di:waypoint x="1550" y="230" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1337" y="183" width="85" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="ScriptTask_0gkgxr7_di" bpmnElement="add_employee_to_trainingslist">
+        <dc:Bounds x="1550" y="190" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="SequenceFlow_1ddtw3h_di" bpmnElement="SequenceFlow_1ddtw3h">
+        <di:waypoint x="1180" y="117" />
+        <di:waypoint x="1240" y="117" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="SequenceFlow_14xivyp_di" bpmnElement="training_declined">
+        <di:waypoint x="1455" y="117" />
+        <di:waypoint x="1730" y="117" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1552" y="99" width="81" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="EndEvent_1f13vhp_di" bpmnElement="end_process">
+        <dc:Bounds x="1882" y="99" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="SequenceFlow_19u5cgt_di" bpmnElement="SequenceFlow_19u5cgt">
+        <di:waypoint x="1830" y="117" />
+        <di:waypoint x="1882" y="117" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="SequenceFlow_0hhavnq_di" bpmnElement="SequenceFlow_0hhavnq">
+        <di:waypoint x="1650" y="230" />
+        <di:waypoint x="1780" y="230" />
+        <di:waypoint x="1780" y="157" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="SendTask_0s9j9fr_di" bpmnElement="inform_user">
+        <dc:Bounds x="1730" y="77" width="100" height="80" />
+      </bpmndi:BPMNShape>
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>
 </bpmn:definitions>

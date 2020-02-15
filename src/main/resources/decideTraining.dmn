@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/DMN/20151101/dmn.xsd" xmlns:camunda="http://camunda.org/schema/1.0/dmn" id="Definitions_11qmz43" name="DRD" namespace="http://camunda.org/schema/1.0/dmn" exporter="Camunda Modeler" exporterVersion="3.5.0">
+  <decision id="decideTrainingDMN" name="Entscheide Schulung ">
+    <decisionTable id="decisionTable_1">
+      <input id="input_1" label="Art der Anstellung" camunda:inputVariable="type_of_enployment">
+        <inputExpression id="inputExpression_1" typeRef="string">
+          <text></text>
+        </inputExpression>
+      </input>
+      <input id="InputClause_0vks4gh" label="Befristet" camunda:inputVariable="limited">
+        <inputExpression id="LiteralExpression_12gbs7k" typeRef="boolean">
+          <text></text>
+        </inputExpression>
+      </input>
+      <output id="output_1" label="Schulung" name="training" typeRef="boolean" />
+      <rule id="DecisionRule_04buvas">
+        <description></description>
+        <inputEntry id="UnaryTests_09ef8ug">
+          <text>"permanent"</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_1k0i8d7">
+          <text>true</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_02328hp">
+          <text>true</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_0vx56dk">
+        <inputEntry id="UnaryTests_09uvard">
+          <text>"permanent"</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_120by6o">
+          <text>false</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_1kninvw">
+          <text>true</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_1gkljhe">
+        <inputEntry id="UnaryTests_0da2buq">
+          <text>"part_time"</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0ke7rlh">
+          <text>true</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_17pyhxs">
+          <text>true</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_0rleqms">
+        <inputEntry id="UnaryTests_1qe8wgz">
+          <text>"part_time"</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0h76u7v">
+          <text>false</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_162llo2">
+          <text>false</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_0uycotw">
+        <inputEntry id="UnaryTests_15bxqq2">
+          <text>"student"</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0m3wm51">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_16xqhfv">
+          <text>false</text>
+        </outputEntry>
+      </rule>
+    </decisionTable>
+  </decision>
+</definitions>

@@ -18,6 +18,7 @@ public class AdExchangeServiceDelegate implements JavaDelegate {
         String lastName = execution.getVariable("last_name").toString();
         String username = firstName.substring(0,1) + lastName;
         execution.setVariable("username", username.toLowerCase());
+        execution.setVariable("email", firstName+"."+lastName+"@unternehmen.de");
 
         LOGGER.info(execution.getVariable("first_name") + " " +  execution.getVariable("last_name")
                 + " angelegt. Erstellter Benutzername: " + execution.getVariable("username"));

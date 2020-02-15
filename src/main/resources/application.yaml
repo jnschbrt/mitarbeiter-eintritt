@@ -2,6 +2,10 @@ camunda.bpm.admin-user:
   id: admin
   password: admin
 
+email:
+  host: mail.fh-muenster.de
+  sender: donotreply@fh-muenster.de
+
 spring:
   datasource:
     url: jdbc:h2:file:/Users/jschubert/camundaDB/camundaDB
