@@ -11,9 +11,9 @@ import org.springframework.stereotype.Service;
 import java.util.logging.Logger;
 
 @Service
-public class ProcessStartedListener implements TaskListener {
+public class AdminValidationListener implements TaskListener {
 
-    private final static Logger LOGGER = Logger.getLogger(ProcessStartedListener.class.getName());
+    private final static Logger LOGGER = Logger.getLogger(AdminValidationListener.class.getName());
 
     @Autowired
     private EmailService emailService;
