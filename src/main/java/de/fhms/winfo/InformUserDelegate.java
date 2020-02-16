@@ -12,8 +12,23 @@ public class InformUserDelegate implements JavaDelegate {
     private EmailService emailService;
 
     public void execute(DelegateExecution execution) throws Exception {
+
+        String training, limited;
+        if (execution.getVariable("training") == "true") {
+            training = "ja";
+        } else {
+            training = "nein";
+        }
+
+        if (execution.getVariable("limited") == "true") {
+            limited = "ja";
+        } else {
+            limited = "nein";
+        }
+
         String to = (String) execution.getVariable("notification_email");
-        String subject = (String) execution.getVariable("username") + " vollständig erfasst";
+        String subject = execution.getVariable("first_name") + " "
+                + execution.getVariable("last_name") + " vollständig erfasst";
         String message = "Hallo, \n"
                 + "Folgender Benutzer wurde durch die Process-Engine in allen notwendigen Systemen erfasst \n\n"
                 + "Vorname: " + execution.getVariable("first_name") + "\n"
@@ -23,8 +38,8 @@ public class InformUserDelegate implements JavaDelegate {
                 + "Abteilung: " + execution.getVariable("department") + "\n"
                 + "Position/Job-Bezeichnung: " + execution.getVariable("position") + "\n"
                 + "Art der Anstellung: " + execution.getVariable("type_of_enployment") + "\n"
-                + "Befristeter Arbeitsvertrag: " + execution.getVariable("limited") + "\n"
-                + "Schulungen geplant: " + execution.getVariable("training");
+                + "Befristeter Arbeitsvertrag: " + limited + "\n"
+                + "Schulungen geplant: " + training;
 
         emailService.sendEmail(to, subject, message);
     }

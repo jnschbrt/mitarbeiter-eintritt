@@ -28,7 +28,6 @@ public class AdminValidationListener implements TaskListener {
 
             if (user != null) {
                 String recipient = user.getEmail();
-                LOGGER.info("Assignee: " + assignee + " .E-Mail: " + recipient);
 
                 if (recipient != null && !recipient.isEmpty()) {
                     String subject = "Neuer Mitarbeiter-Eintritt Prozess gestartet";
